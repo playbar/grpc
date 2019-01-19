@@ -1076,11 +1076,13 @@ nanopb_fuzzer_serverlist_test: $(BINDIR)/$(CONFIG)/nanopb_fuzzer_serverlist_test
 no_server_test: $(BINDIR)/$(CONFIG)/no_server_test
 num_external_connectivity_watchers_test: $(BINDIR)/$(CONFIG)/num_external_connectivity_watchers_test
 parse_address_test: $(BINDIR)/$(CONFIG)/parse_address_test
+parse_address_with_named_scope_id_test: $(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test
 percent_decode_fuzzer: $(BINDIR)/$(CONFIG)/percent_decode_fuzzer
 percent_encode_fuzzer: $(BINDIR)/$(CONFIG)/percent_encode_fuzzer
 percent_encoding_test: $(BINDIR)/$(CONFIG)/percent_encoding_test
-resolve_address_posix_test: $(BINDIR)/$(CONFIG)/resolve_address_posix_test
+resolve_address_using_ares_resolver_posix_test: $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test
 resolve_address_using_ares_resolver_test: $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_test
+resolve_address_using_native_resolver_posix_test: $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test
 resolve_address_using_native_resolver_test: $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_test
 resource_quota_test: $(BINDIR)/$(CONFIG)/resource_quota_test
 secure_channel_create_test: $(BINDIR)/$(CONFIG)/secure_channel_create_test
@@ -1527,9 +1529,11 @@ buildtests_c: privatelibs_c \
   $(BINDIR)/$(CONFIG)/no_server_test \
   $(BINDIR)/$(CONFIG)/num_external_connectivity_watchers_test \
   $(BINDIR)/$(CONFIG)/parse_address_test \
+  $(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test \
   $(BINDIR)/$(CONFIG)/percent_encoding_test \
-  $(BINDIR)/$(CONFIG)/resolve_address_posix_test \
+  $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test \
   $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_test \
+  $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test \
   $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_test \
   $(BINDIR)/$(CONFIG)/resource_quota_test \
   $(BINDIR)/$(CONFIG)/secure_channel_create_test \
@@ -2129,12 +2133,16 @@ test_c: buildtests_c
 	$(Q) $(BINDIR)/$(CONFIG)/num_external_connectivity_watchers_test || ( echo test num_external_connectivity_watchers_test failed ; exit 1 )
 	$(E) "[RUN]     Testing parse_address_test"
 	$(Q) $(BINDIR)/$(CONFIG)/parse_address_test || ( echo test parse_address_test failed ; exit 1 )
+	$(E) "[RUN]     Testing parse_address_with_named_scope_id_test"
+	$(Q) $(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test || ( echo test parse_address_with_named_scope_id_test failed ; exit 1 )
 	$(E) "[RUN]     Testing percent_encoding_test"
 	$(Q) $(BINDIR)/$(CONFIG)/percent_encoding_test || ( echo test percent_encoding_test failed ; exit 1 )
-	$(E) "[RUN]     Testing resolve_address_posix_test"
-	$(Q) $(BINDIR)/$(CONFIG)/resolve_address_posix_test || ( echo test resolve_address_posix_test failed ; exit 1 )
+	$(E) "[RUN]     Testing resolve_address_using_ares_resolver_posix_test"
+	$(Q) $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test || ( echo test resolve_address_using_ares_resolver_posix_test failed ; exit 1 )
 	$(E) "[RUN]     Testing resolve_address_using_ares_resolver_test"
 	$(Q) $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_test || ( echo test resolve_address_using_ares_resolver_test failed ; exit 1 )
+	$(E) "[RUN]     Testing resolve_address_using_native_resolver_posix_test"
+	$(Q) $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test || ( echo test resolve_address_using_native_resolver_posix_test failed ; exit 1 )
 	$(E) "[RUN]     Testing resolve_address_using_native_resolver_test"
 	$(Q) $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_test || ( echo test resolve_address_using_native_resolver_test failed ; exit 1 )
 	$(E) "[RUN]     Testing resource_quota_test"
@@ -3504,6 +3512,8 @@ LIBGRPC_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -3515,7 +3525,6 @@ LIBGRPC_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -3720,11 +3729,13 @@ LIBGRPC_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -3735,7 +3746,7 @@ LIBGRPC_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/filters/client_channel/health/health.pb.c \
     src/core/tsi/fake_transport_security.cc \
@@ -3920,6 +3931,8 @@ LIBGRPC_CRONET_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -3931,7 +3944,6 @@ LIBGRPC_CRONET_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -4067,11 +4079,13 @@ LIBGRPC_CRONET_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -4082,7 +4096,7 @@ LIBGRPC_CRONET_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/filters/client_channel/health/health.pb.c \
     third_party/nanopb/pb_common.c \
@@ -4272,6 +4286,7 @@ LIBGRPC_TEST_UTIL_SRC = \
     test/core/util/subprocess_posix.cc \
     test/core/util/subprocess_windows.cc \
     test/core/util/test_config.cc \
+    test/core/util/test_lb_policies.cc \
     test/core/util/tracer_util.cc \
     test/core/util/trickle_endpoint.cc \
     test/core/util/cmdline.cc \
@@ -4319,6 +4334,8 @@ LIBGRPC_TEST_UTIL_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -4330,7 +4347,6 @@ LIBGRPC_TEST_UTIL_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -4434,11 +4450,13 @@ LIBGRPC_TEST_UTIL_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -4449,7 +4467,7 @@ LIBGRPC_TEST_UTIL_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/filters/client_channel/health/health.pb.c \
     third_party/nanopb/pb_common.c \
@@ -4581,6 +4599,7 @@ LIBGRPC_TEST_UTIL_UNSECURE_SRC = \
     test/core/util/subprocess_posix.cc \
     test/core/util/subprocess_windows.cc \
     test/core/util/test_config.cc \
+    test/core/util/test_lb_policies.cc \
     test/core/util/tracer_util.cc \
     test/core/util/trickle_endpoint.cc \
     test/core/util/cmdline.cc \
@@ -4628,6 +4647,8 @@ LIBGRPC_TEST_UTIL_UNSECURE_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -4639,7 +4660,6 @@ LIBGRPC_TEST_UTIL_UNSECURE_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -4743,11 +4763,13 @@ LIBGRPC_TEST_UTIL_UNSECURE_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -4758,7 +4780,7 @@ LIBGRPC_TEST_UTIL_UNSECURE_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/filters/client_channel/health/health.pb.c \
     third_party/nanopb/pb_common.c \
@@ -4901,6 +4923,8 @@ LIBGRPC_UNSECURE_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -4912,7 +4936,6 @@ LIBGRPC_UNSECURE_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -5051,11 +5074,13 @@ LIBGRPC_UNSECURE_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -5066,7 +5091,7 @@ LIBGRPC_UNSECURE_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/filters/client_channel/health/health.pb.c \
     third_party/nanopb/pb_common.c \
@@ -5763,6 +5788,8 @@ LIBGRPC++_CRONET_SRC = \
     src/core/lib/iomgr/gethostname_fallback.cc \
     src/core/lib/iomgr/gethostname_host_name_max.cc \
     src/core/lib/iomgr/gethostname_sysconf.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_posix.cc \
+    src/core/lib/iomgr/grpc_if_nametoindex_unsupported.cc \
     src/core/lib/iomgr/internal_errqueue.cc \
     src/core/lib/iomgr/iocp_windows.cc \
     src/core/lib/iomgr/iomgr.cc \
@@ -5774,7 +5801,6 @@ LIBGRPC++_CRONET_SRC = \
     src/core/lib/iomgr/is_epollexclusive_available.cc \
     src/core/lib/iomgr/load_file.cc \
     src/core/lib/iomgr/lockfree_event.cc \
-    src/core/lib/iomgr/network_status_tracker.cc \
     src/core/lib/iomgr/polling_entity.cc \
     src/core/lib/iomgr/pollset.cc \
     src/core/lib/iomgr/pollset_custom.cc \
@@ -5883,11 +5909,13 @@ LIBGRPC++_CRONET_SRC = \
     src/core/ext/filters/client_channel/client_channel_factory.cc \
     src/core/ext/filters/client_channel/client_channel_plugin.cc \
     src/core/ext/filters/client_channel/connector.cc \
+    src/core/ext/filters/client_channel/global_subchannel_pool.cc \
     src/core/ext/filters/client_channel/health/health_check_client.cc \
     src/core/ext/filters/client_channel/http_connect_handshaker.cc \
     src/core/ext/filters/client_channel/http_proxy.cc \
     src/core/ext/filters/client_channel/lb_policy.cc \
     src/core/ext/filters/client_channel/lb_policy_registry.cc \
+    src/core/ext/filters/client_channel/local_subchannel_pool.cc \
     src/core/ext/filters/client_channel/parse_address.cc \
     src/core/ext/filters/client_channel/proxy_mapper.cc \
     src/core/ext/filters/client_channel/proxy_mapper_registry.cc \
@@ -5898,7 +5926,7 @@ LIBGRPC++_CRONET_SRC = \
     src/core/ext/filters/client_channel/retry_throttle.cc \
     src/core/ext/filters/client_channel/server_address.cc \
     src/core/ext/filters/client_channel/subchannel.cc \
-    src/core/ext/filters/client_channel/subchannel_index.cc \
+    src/core/ext/filters/client_channel/subchannel_pool_interface.cc \
     src/core/ext/filters/deadline/deadline_filter.cc \
     src/core/ext/transport/chttp2/server/insecure/server_chttp2.cc \
     src/core/ext/transport/chttp2/server/insecure/server_chttp2_posix.cc \
@@ -10359,7 +10387,6 @@ LIBEND2END_TESTS_SRC = \
     test/core/end2end/tests/max_connection_idle.cc \
     test/core/end2end/tests/max_message_length.cc \
     test/core/end2end/tests/negative_deadline.cc \
-    test/core/end2end/tests/network_status_change.cc \
     test/core/end2end/tests/no_error_on_hotpath.cc \
     test/core/end2end/tests/no_logging.cc \
     test/core/end2end/tests/no_op.cc \
@@ -10476,7 +10503,6 @@ LIBEND2END_NOSEC_TESTS_SRC = \
     test/core/end2end/tests/max_connection_idle.cc \
     test/core/end2end/tests/max_message_length.cc \
     test/core/end2end/tests/negative_deadline.cc \
-    test/core/end2end/tests/network_status_change.cc \
     test/core/end2end/tests/no_error_on_hotpath.cc \
     test/core/end2end/tests/no_logging.cc \
     test/core/end2end/tests/no_op.cc \
@@ -13988,6 +14014,38 @@ endif
 endif
 
 
+PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_SRC = \
+    test/core/client_channel/parse_address_with_named_scope_id_test.cc \
+
+PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_SRC))))
+ifeq ($(NO_SECURE),true)
+
+# You can't build secure targets if you don't have OpenSSL.
+
+$(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test: openssl_dep_error
+
+else
+
+
+
+$(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test: $(PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
+	$(E) "[LD]      Linking $@"
+	$(Q) mkdir -p `dirname $@`
+	$(Q) $(LD) $(LDFLAGS) $(PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a $(LDLIBS) $(LDLIBS_SECURE) -o $(BINDIR)/$(CONFIG)/parse_address_with_named_scope_id_test
+
+endif
+
+$(OBJDIR)/$(CONFIG)/test/core/client_channel/parse_address_with_named_scope_id_test.o:  $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
+
+deps_parse_address_with_named_scope_id_test: $(PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_OBJS:.o=.dep)
+
+ifneq ($(NO_SECURE),true)
+ifneq ($(NO_DEPS),true)
+-include $(PARSE_ADDRESS_WITH_NAMED_SCOPE_ID_TEST_OBJS:.o=.dep)
+endif
+endif
+
+
 PERCENT_DECODE_FUZZER_SRC = \
     test/core/slice/percent_decode_fuzzer.cc \
 
@@ -14084,34 +14142,34 @@ endif
 endif
 
 
-RESOLVE_ADDRESS_POSIX_TEST_SRC = \
+RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_SRC = \
     test/core/iomgr/resolve_address_posix_test.cc \
 
-RESOLVE_ADDRESS_POSIX_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(RESOLVE_ADDRESS_POSIX_TEST_SRC))))
+RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_SRC))))
 ifeq ($(NO_SECURE),true)
 
 # You can't build secure targets if you don't have OpenSSL.
 
-$(BINDIR)/$(CONFIG)/resolve_address_posix_test: openssl_dep_error
+$(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test: openssl_dep_error
 
 else
 
 
 
-$(BINDIR)/$(CONFIG)/resolve_address_posix_test: $(RESOLVE_ADDRESS_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
+$(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test: $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
 	$(E) "[LD]      Linking $@"
 	$(Q) mkdir -p `dirname $@`
-	$(Q) $(LD) $(LDFLAGS) $(RESOLVE_ADDRESS_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a $(LDLIBS) $(LDLIBS_SECURE) -o $(BINDIR)/$(CONFIG)/resolve_address_posix_test
+	$(Q) $(LD) $(LDFLAGS) $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a $(LDLIBS) $(LDLIBS_SECURE) -o $(BINDIR)/$(CONFIG)/resolve_address_using_ares_resolver_posix_test
 
 endif
 
 $(OBJDIR)/$(CONFIG)/test/core/iomgr/resolve_address_posix_test.o:  $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
 
-deps_resolve_address_posix_test: $(RESOLVE_ADDRESS_POSIX_TEST_OBJS:.o=.dep)
+deps_resolve_address_using_ares_resolver_posix_test: $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_OBJS:.o=.dep)
 
 ifneq ($(NO_SECURE),true)
 ifneq ($(NO_DEPS),true)
--include $(RESOLVE_ADDRESS_POSIX_TEST_OBJS:.o=.dep)
+-include $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_POSIX_TEST_OBJS:.o=.dep)
 endif
 endif
 
@@ -14144,6 +14202,38 @@ deps_resolve_address_using_ares_resolver_test: $(RESOLVE_ADDRESS_USING_ARES_RESO
 ifneq ($(NO_SECURE),true)
 ifneq ($(NO_DEPS),true)
 -include $(RESOLVE_ADDRESS_USING_ARES_RESOLVER_TEST_OBJS:.o=.dep)
+endif
+endif
+
+
+RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_SRC = \
+    test/core/iomgr/resolve_address_posix_test.cc \
+
+RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_OBJS = $(addprefix $(OBJDIR)/$(CONFIG)/, $(addsuffix .o, $(basename $(RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_SRC))))
+ifeq ($(NO_SECURE),true)
+
+# You can't build secure targets if you don't have OpenSSL.
+
+$(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test: openssl_dep_error
+
+else
+
+
+
+$(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test: $(RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
+	$(E) "[LD]      Linking $@"
+	$(Q) mkdir -p `dirname $@`
+	$(Q) $(LD) $(LDFLAGS) $(RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_OBJS) $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a $(LDLIBS) $(LDLIBS_SECURE) -o $(BINDIR)/$(CONFIG)/resolve_address_using_native_resolver_posix_test
+
+endif
+
+$(OBJDIR)/$(CONFIG)/test/core/iomgr/resolve_address_posix_test.o:  $(LIBDIR)/$(CONFIG)/libgrpc_test_util.a $(LIBDIR)/$(CONFIG)/libgrpc.a $(LIBDIR)/$(CONFIG)/libgpr.a
+
+deps_resolve_address_using_native_resolver_posix_test: $(RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_OBJS:.o=.dep)
+
+ifneq ($(NO_SECURE),true)
+ifneq ($(NO_DEPS),true)
+-include $(RESOLVE_ADDRESS_USING_NATIVE_RESOLVER_POSIX_TEST_OBJS:.o=.dep)
 endif
 endif
 
